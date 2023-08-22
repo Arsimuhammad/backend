@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs'
+import { NextResponse } from 'next/server'
 
-import prismadb from '@/lib/prismadb';
+import prismadb from '@/lib/prismadb'
 
 export async function POST(
   req: Request,
@@ -12,7 +12,7 @@ export async function POST(
 
     const body = await req.json();
 
-    const { name, price, categoryId, colorId, sizeId, images, isFeatured, isArchived } = body;
+    const { name, price,stock, categoryId, colorId, sizeId, images, isFeatured, isArchived } = body;
 
     if (!userId) {
       return new NextResponse("Unauthenticated", { status: 403 });
@@ -29,6 +29,11 @@ export async function POST(
     if (!price) {
       return new NextResponse("Price is required", { status: 400 });
     }
+
+    if (!stock) {
+      return new NextResponse("Stock is required", { status: 400 });
+    }
+
 
     if (!categoryId) {
       return new NextResponse("Category id is required", { status: 400 });
@@ -60,7 +65,7 @@ export async function POST(
     const product = await prismadb.product.create({
       data: {
         name,
-        price,
+        price,        stock,
         isFeatured,
         isArchived,
         categoryId,

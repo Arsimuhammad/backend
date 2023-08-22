@@ -1,17 +1,18 @@
 "use client"
 
-import * as z from "zod"
-import axios from "axios"
-import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Category, Color, Image, Product, Size } from "@prisma/client"
+import axios from "axios"
+import { Trash } from "lucide-react"
+import { useParams, useRouter } from "next/navigation"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "react-hot-toast"
-import { Trash } from "lucide-react"
-import { Category, Color, Image, Product, Size } from "@prisma/client"
-import { useParams, useRouter } from "next/navigation"
+import * as z from "zod"
 
-import { Input } from "@/components/ui/input"
+import { AlertModal } from "@/components/modals/alert-modal"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Form,
   FormControl,
@@ -21,17 +22,17 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { Separator } from "@/components/ui/separator"
 import { Heading } from "@/components/ui/heading"
-import { AlertModal } from "@/components/modals/alert-modal"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import ImageUpload from "@/components/ui/image-upload"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
 
 const formSchema = z.object({
   name: z.string().min(1),
   images: z.object({ url: z.string() }).array(),
   price: z.coerce.number().min(1),
+  	stock: z.coerce.number().min(0),
   categoryId: z.string().min(1),
   colorId: z.string().min(1),
   sizeId: z.string().min(1),
@@ -74,6 +75,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     name: '',
     images: [],
     price: 0,
+    				stock: 0,
     categoryId: '',
     colorId: '',
     sizeId: '',
@@ -188,6 +190,24 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 </FormItem>
               )}
             />
+            <FormField
+							control={form.control}
+							name="stock"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Stock</FormLabel>
+									<FormControl>
+										<Input
+											type="number"
+											disabled={loading}
+											placeholder="0"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
             <FormField
               control={form.control}
               name="categoryId"

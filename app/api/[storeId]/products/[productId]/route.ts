@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs"
+import { NextResponse } from "next/server"
 
-import prismadb from "@/lib/prismadb";
+import prismadb from "@/lib/prismadb"
 
 export async function GET(
   req: Request,
@@ -80,7 +80,7 @@ export async function PATCH(
 
     const body = await req.json();
 
-    const { name, price, categoryId, images, colorId, sizeId, isFeatured, isArchived } = body;
+    const { name, price, stock, categoryId, images, colorId, sizeId, isFeatured, isArchived } = body;
 
     if (!userId) {
       return new NextResponse("Unauthenticated", { status: 403 });
@@ -100,6 +100,10 @@ export async function PATCH(
 
     if (!price) {
       return new NextResponse("Price is required", { status: 400 });
+    }
+
+    if (!stock) {
+      return new NextResponse("stock is required", { status: 400 });
     }
 
     if (!categoryId) {
@@ -132,6 +136,7 @@ export async function PATCH(
       data: {
         name,
         price,
+        stock,
         categoryId,
         colorId,
         sizeId,
