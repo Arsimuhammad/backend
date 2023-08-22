@@ -23,13 +23,16 @@ export async function GET(
         color: true,
       }
     })
-    const sold = await prismadb.orderItem.count({
-      where: {
-        productId: product.id,
-      }
-    })
+    if (product) {
 
-    product.stock = product.stock - sold
+      const sold = await prismadb.orderItem.count({
+        where: {
+          productId: product.id,
+        }
+      })
+
+      product.stock = product.stock - sold
+    }
 
     return NextResponse.json(product)
   } catch (error) {
