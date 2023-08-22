@@ -25,7 +25,15 @@ const ProductsPage = async ({
     }
   });
 
-  const formattedProducts: ProductColumn[] = products.map((item) => ({
+  const formattedProducts: ProductColumn[] = await Promise.all(products.map(async (item) => {
+const sold = await prismadb.orderItem.count({
+        where: {
+          productId: item.id,
+        }
+      })
+
+      item.stock = item.stock - sold
+    return {
     id: item.id,
     name: item.name,
     isFeatured: item.isFeatured,
@@ -36,7 +44,8 @@ const ProductsPage = async ({
     size: item.size.name,
     color: item.color.value,
     createdAt: format(item.createdAt, 'MMMM do, yyyy'),
-  }));
+  }
+  }))
 
   return (
     <div className="flex-col">
