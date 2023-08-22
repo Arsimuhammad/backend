@@ -8,47 +8,47 @@ export async function POST(
   { params }: { params: { storeId: string } }
 ) {
   try {
-    const { userId } = auth();
+    const { userId } = auth()
 
-    const body = await req.json();
+    const body = await req.json()
 
-    const { name, price,stock, categoryId, colorId, sizeId, images, isFeatured, isArchived } = body;
+    const { name, price, stock, categoryId, colorId, sizeId, images, isFeatured, isArchived } = body
 
     if (!userId) {
-      return new NextResponse("Unauthenticated", { status: 403 });
+      return new NextResponse("Unauthenticated", { status: 403 })
     }
 
     if (!name) {
-      return new NextResponse("Name is required", { status: 400 });
+      return new NextResponse("Name is required", { status: 400 })
     }
 
     if (!images || !images.length) {
-      return new NextResponse("Images are required", { status: 400 });
+      return new NextResponse("Images are required", { status: 400 })
     }
 
     if (!price) {
-      return new NextResponse("Price is required", { status: 400 });
+      return new NextResponse("Price is required", { status: 400 })
     }
 
     if (!stock) {
-      return new NextResponse("Stock is required", { status: 400 });
+      return new NextResponse("Stock is required", { status: 400 })
     }
 
 
     if (!categoryId) {
-      return new NextResponse("Category id is required", { status: 400 });
+      return new NextResponse("Category id is required", { status: 400 })
     }
 
     if (!colorId) {
-      return new NextResponse("Color id is required", { status: 400 });
+      return new NextResponse("Color id is required", { status: 400 })
     }
 
     if (!sizeId) {
-      return new NextResponse("Size id is required", { status: 400 });
+      return new NextResponse("Size id is required", { status: 400 })
     }
 
     if (!params.storeId) {
-      return new NextResponse("Store id is required", { status: 400 });
+      return new NextResponse("Store id is required", { status: 400 })
     }
 
     const storeByUserId = await prismadb.store.findFirst({
@@ -56,16 +56,16 @@ export async function POST(
         id: params.storeId,
         userId
       }
-    });
+    })
 
     if (!storeByUserId) {
-      return new NextResponse("Unauthorized", { status: 405 });
+      return new NextResponse("Unauthorized", { status: 405 })
     }
 
     const product = await prismadb.product.create({
       data: {
         name,
-        price,        stock,
+        price, stock,
         isFeatured,
         isArchived,
         categoryId,
@@ -80,12 +80,12 @@ export async function POST(
           },
         },
       },
-    });
-  
-    return NextResponse.json(product);
+    })
+
+    return NextResponse.json(product)
   } catch (error) {
-    console.log('[PRODUCTS_POST]', error);
-    return new NextResponse("Internal error", { status: 500 });
+    console.log('[PRODUCTS_POST]', error)
+    return new NextResponse("Internal error", { status: 500 })
   }
 };
 
@@ -95,16 +95,16 @@ export async function GET(
 ) {
   try {
     const { searchParams } = new URL(req.url)
-    const categoryId = searchParams.get('categoryId') || undefined;
-    const colorId = searchParams.get('colorId') || undefined;
-    const sizeId = searchParams.get('sizeId') || undefined;
-    const isFeatured = searchParams.get('isFeatured');
+    const categoryId = searchParams.get('categoryId') || undefined
+    const colorId = searchParams.get('colorId') || undefined
+    const sizeId = searchParams.get('sizeId') || undefined
+    const isFeatured = searchParams.get('isFeatured')
 
     if (!params.storeId) {
-      return new NextResponse("Store id is required", { status: 400 });
+      return new NextResponse("Store id is required", { status: 400 })
     }
 
-    const products = await prismadb.product.findMany({
+    let products = await prismadb.product.findMany({
       where: {
         storeId: params.storeId,
         categoryId,
@@ -122,11 +122,21 @@ export async function GET(
       orderBy: {
         createdAt: 'desc',
       }
-    });
-  
-    return NextResponse.json(products);
+    })
+    products = await Promise.all(products.map(async (product) => {
+      const sold = await prismadb.orderItem.count({
+        where: {
+          productId: product.id,
+        }
+      })
+
+      product.stock=product.stock - sold
+      return product
+    }))
+
+    return NextResponse.json(products)
   } catch (error) {
-    console.log('[PRODUCTS_GET]', error);
-    return new NextResponse("Internal error", { status: 500 });
+    console.log('[PRODUCTS_GET]', error)
+    return new NextResponse("Internal error", { status: 500 })
   }
 };
