@@ -139,6 +139,12 @@ export async function PATCH(
       return new NextResponse("Unauthorized", { status: 405 })
     }
 
+    const sold = await prismadb.orderItem.count({
+      where: {
+        productId: params.productId,
+      },
+    })
+
     await prismadb.product.update({
       where: {
         id: params.productId
@@ -146,7 +152,7 @@ export async function PATCH(
       data: {
         name,
         price,
-        stock,
+        stock: stock + sold,
         categoryId,
         colorId,
         sizeId,
