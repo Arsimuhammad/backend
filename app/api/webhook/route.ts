@@ -1,9 +1,9 @@
-import Stripe from "stripe"
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
+import Stripe from "stripe"
 
-import { stripe } from "@/lib/stripe"
 import prismadb from "@/lib/prismadb"
+import { stripe } from "@/lib/stripe"
 
 export async function POST(req: Request) {
   const body = await req.text()
@@ -21,8 +21,8 @@ export async function POST(req: Request) {
     return new NextResponse(`Webhook Error: ${error.message}`, { status: 400 })
   }
 
-  const session = event.data.object as Stripe.Checkout.Session;
-  const address = session?.customer_details?.address;
+  const session = event.data.object as Stripe.Checkout.Session
+  const address = session?.customer_details?.address
 
   const addressComponents = [
     address?.line1,
@@ -31,9 +31,9 @@ export async function POST(req: Request) {
     address?.state,
     address?.postal_code,
     address?.country
-  ];
+  ]
 
-  const addressString = addressComponents.filter((c) => c !== null).join(', ');
+  const addressString = addressComponents.filter((c) => c !== null).join(', ')
 
 
   if (event.type === "checkout.session.completed") {
@@ -43,15 +43,16 @@ export async function POST(req: Request) {
       },
       data: {
         isPaid: true,
+        name: session.customer_details?.name || '',
         address: addressString,
         phone: session?.customer_details?.phone || '',
       },
       include: {
         orderItems: true,
       }
-    });
+    })
 
-    const productIds = order.orderItems.map((orderItem) => orderItem.productId);
+    const productIds = order.orderItems.map((orderItem) => orderItem.productId)
 
     await prismadb.product.updateMany({
       where: {
@@ -62,8 +63,8 @@ export async function POST(req: Request) {
       data: {
         isArchived: true
       }
-    });
+    })
   }
 
-  return new NextResponse(null, { status: 200 });
+  return new NextResponse(null, { status: 200 })
 };
