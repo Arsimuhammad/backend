@@ -123,16 +123,19 @@ export async function GET(
         createdAt: 'desc',
       }
     })
-    products = await Promise.all(products.map(async (product) => {
+
+    const allProduct = await Promise.all(products.map(async (product) => {
       const sold = await prismadb.orderItem.count({
         where: {
           productId: product.id,
         }
       })
 
-      product.stock=product.stock - sold
+      product.stock = product.stock - sold
       return product
     }))
+
+    products = allProduct.filter(product => product.stock > 0)
 
     return NextResponse.json(products)
   } catch (error) {
