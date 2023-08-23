@@ -5,6 +5,7 @@ import { ColumnDef } from "@tanstack/react-table"
 export type OrderColumn = {
 	id: string;
 	phone: string;
+	name: string;
 	address: string;
 	isPaid: boolean;
 	totalPrice: string;
